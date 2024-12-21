@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>داشبورد مدیریت پروژه</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker/dist/css/persian-datepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-date/dist/persian-date.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker/dist/js/persian-datepicker.min.js"></script>
+    <style>
+        @import url('https://cdn.fontiran.com/css/Vazir.css');
+        body {
+            font-family: 'Vazir', sans-serif;
+        }
+
+        /* گرادیان پس‌زمینه */
+        body {
+            background: linear-gradient(135deg, rgb(197, 199, 218) 0%, rgb(197, 199, 218) 100%);
+            min-height: 100vh;
+        }
+
+        /* انیمیشن برای دکمه‌ها */
+        .btn {
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: linear-gradient(145deg, #ffffff, #f3f4f6);
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3);
+            border-color: #38BDF8;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* طراحی دکمه‌های خاص */
+        .btn-blue {
+            background: linear-gradient(135deg, #3B82F6, #60A5FA);
+        }
+
+        .btn-blue:hover {
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #10B981, #34D399);
+        }
+
+        .btn-green:hover {
+            background: linear-gradient(135deg, #059669, #10B981);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- نوار ناوبری -->
+    <header class="bg-gradient-to-r from-green-400 to-indigo-500 p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-2xl text-white font-bold flex items-center">
+                    <path d="M12 2a10 10 0 100 20 10 10 0 000-20zM6 12l4 4 6-6" />
+                </svg>
+                مدیریت پروژه
+            </div>
+            <div class="hidden text-black sm:flex items-center gap-4">
+                <input type="text" placeholder="جستجوی پروژه..." class="px-4 py-2 rounded-md border border-gray-300 focus:ring focus:ring-blue-300 outline-none">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md">جستجو</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- محتوای اصلی -->
+    <main class="container mx-auto mt-8 px-4">
+        <!-- دکمه ایجاد پروژه جدید -->
+        <div class="mb-4 flex justify-start">
+            <button id="create-project" class="btn btn-green text-white py-2 px-6 rounded-md">
+                + ایجاد پروژه جدید
+            </button>
+        </div>
+
+        <!-- لیست پروژه‌ها -->
+        <div id="projects" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- پروژه‌ها به صورت پویا اضافه می‌شوند -->
+        </div>
+    </main>
+
+    <!-- فرم ایجاد/ویرایش پروژه -->
+    <div id="project-form" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center fade-in">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <h2 id="form-title" class="text-2xl font-bold mb-4">ایجاد پروژه جدید</h2>
+            <form id="project-details-form">
+                <div class="mb-4">
+                    <label for="project-title" class="block text-sm font-medium text-gray-700">عنوان پروژه</label>
+                    <input type="text" id="project-title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="project-start" class="block text-sm font-medium text-gray-700">تاریخ شروع</label>
+                    <input type="text" id="project-start" class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="project-end" class="block text-sm font-medium text-gray-700">تاریخ پایان</label>
+                    <input type="text" id="project-end" class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="project-status" class="block text-sm font-medium text-gray-700">وضعیت پروژه</label>
+                    <select id="project-status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="در حال انجام">در حال انجام</option>
+                        <option value="معلق">معلق</option>
+                        <option value="تکمیل شده">تکمیل شده</option>
+                    </select>
+                </div>
+                <div class="flex justify-between">
+                    <button type="button" id="cancel-form" class="btn text-gray-700 bg-gray-200 hover:bg-gray-300 py-2 px-4 rounded-md">انصراف</button>
+                    <button type="submit" id="save-project" class="btn btn-blue text-white py-2 px-4 rounded-md">ذخیره</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $(".datepicker").persianDatepicker({
+                format: "YYYY/MM/DD",
+                autoClose: true,
+            });
+
+            let projects = [];
+            let editingProjectId = null;
+
+            function renderProjects() {
+                const projectsContainer = document.getElementById("projects");
+                projectsContainer.innerHTML = "";
+                projects.forEach((project) => {
+                    const projectCard = `
+                        <div class="bg-white p-6 rounded-lg shadow-md card">
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">${project.title}</h3>
+                            <p class="text-gray-500 mb-2">تاریخ شروع: ${project.startDate}</p>
+                            <p class="text-gray-500 mb-2">تاریخ پایان: ${project.endDate}</p>
+                            <p class="${getStatusColor(project.status)} font-bold">وضعیت: ${project.status}</p>
+                            <div class="mt-4 flex gap-2">
+                                <button class="bg-blue-500 text-white px-4 py-2 rounded-md btn" onclick="editProject(${project.id})">ویرایش</button>
+                                <button class="bg-red-500 text-white px-4 py-2 rounded-md btn" onclick="deleteProject(${project.id})">حذف</button>
+                            </div>
+                        </div>`;
+                    projectsContainer.innerHTML += projectCard;
+                });
+            }
+
+            function getStatusColor(status) {
+                return status === "در حال انجام" ? "text-green-600" : status === "معلق" ? "text-yellow-500" : "text-red-600";
+            }
+
+            function showForm(isEdit, project) {
+                editingProjectId = isEdit ? project.id : null;
+                $("#form-title").text(isEdit ? "ویرایش پروژه" : "ایجاد پروژه جدید");
+                $("#project-title").val(isEdit ? project.title : "");
+                $("#project-start").val(isEdit ? project.startDate : "");
+                $("#project-end").val(isEdit ? project.endDate : "");
+                $("#project-status").val(isEdit ? project.status : "در حال انجام");
+                $("#project-form").removeClass("hidden");
+            }
+
+            $("#create-project").click(() => showForm(false, null));
+            $("#cancel-form").click(() => $("#project-form").addClass("hidden"));
+
+            $("#project-details-form").submit((e) => {
+                e.preventDefault();
+                const title = $("#project-title").val();
+                const startDate = $("#project-start").val();
+                const endDate = $("#project-end").val();
+                const status = $("#project-status").val();
+                if (editingProjectId !== null) {
+                    const project = projects.find((p) => p.id === editingProjectId);
+                    Object.assign(project, { title, startDate, endDate, status });
+                } else {
+                    projects.push({ id: Date.now(), title, startDate, endDate, status });
+                }
+                $("#project-form").addClass("hidden");
+                renderProjects();
+            });
+
+            window.editProject = (id) => {
+                const project = projects.find((p) => p.id === id);
+                showForm(true, project);
+            };
+
+            window.deleteProject = (id) => {
+                if (confirm("آیا مطمئن هستید که می‌خواهید این پروژه را حذف کنید؟")) {
+                    projects = projects.filter((p) => p.id !== id);
+                    renderProjects();
+                }
+            };
+
+            renderProjects();
+        });
+    </script>
+</body>
+</html>

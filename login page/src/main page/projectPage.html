@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Task Board</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .card-container { min-height: 300px; }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .comment-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background-color: #f9fafb;
+    }
+
+    .comment-item {
+      margin-bottom: 6px;
+      padding: 8px;
+      background-color: #b3acbb;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      color: #374151;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    button {
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    .box-header {
+      background-color: #4f46e5;
+      color: white;
+      padding: 8px 12px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+  </style>
+  <script>
+    let currentCard = null;
+
+    function addCard(columnId) {
+      const taskName = prompt("Enter task name:", "New Task");
+      if (!taskName) return;
+
+      const taskDescription = prompt("Enter task description:", "Task details...");
+      if (!taskDescription) return;
+
+      const container = document.getElementById(columnId);
+      const newCard = document.createElement('div');
+      newCard.className = 'card bg-gray-200 rounded-lg p-4 mb-4 shadow-md';
+
+      if (columnId === 'done-column') {
+        newCard.innerHTML = `
+          <h3 class="text-sm text-right font-semibold text-gray-800">${taskName}</h3>
+          <p class="text-sm text-right text-gray-700 mt-2">${taskDescription}</p>
+          <button class="bg-green-500 font-semibold text-white text-xs py-1 px-2 rounded hover:bg-green-600 mt-2" onclick="openCommentModal(this)">نظرات</button>
+        `;
+      } else {
+        newCard.innerHTML = `
+          <h3 class="text-sm font-semibold text-gray-800">${taskName}</h3>
+          <p class="text-sm text-gray-700 mt-2">${taskDescription}</p>
+        `;
+      }
+
+      container.appendChild(newCard);
+    }
+
+    function openCommentModal(cardElement) {
+      currentCard = cardElement;
+      const modal = document.getElementById('comment-modal');
+      modal.style.display = 'flex';
+    }
+
+    function closeCommentModal() {
+      const modal = document.getElementById('comment-modal');
+      modal.style.display = 'none';
+    }
+
+    function addComment() {
+      const commentInput = document.getElementById('comment-input');
+      const comment = commentInput.value.trim();
+      if (comment && currentCard) {
+        const commentList = document.getElementById('comment-list');
+        const newComment = document.createElement('div');
+        newComment.className = 'comment-item';
+        newComment.innerHTML = `<span>${comment}</span>`;
+        commentList.appendChild(newComment);
+        commentInput.value = '';
+      }
+    }
+  </script>
+</head>
+<body class="bg-gradient-to-r from-purple-700 via-purple-500 to-blue-300 min-h-screen flex justify-center items-start p-6 rtl">
+  <div class="flex space-x-4 space-x-reverse w-full max-w-7xl">
+
+    <!-- To Do Column -->
+    <div class="bg-white rounded-lg shadow-lg w-1/3 flex flex-col mx-2">
+      <div class="box-header">کارها</div>
+      <div id="todo-column" class="card-container flex-1 overflow-y-auto p-4"></div>
+      <button class="bg-blue-500 text-white text-sm py-2 px-4 rounded hover:bg-blue-600 m-4" onclick="addCard('todo-column')">افزودن کارت</button>
+    </div>
+
+    <!-- Doing Column -->
+    <div class="bg-white rounded-lg shadow-lg w-1/3 flex flex-col mx-2">
+      <div class="box-header">در حال انجام</div>
+      <div id="doing-column" class="card-container flex-1 overflow-y-auto p-4"></div>
+      <button class="bg-blue-500 text-white text-sm py-2 px-4 rounded hover:bg-blue-600 m-4" onclick="addCard('doing-column')">افزودن کارت</button>
+    </div>
+
+    <!-- Done Column -->
+    <div class="bg-white rounded-lg shadow-lg w-1/3 flex flex-col mx-2">
+      <div class="box-header">انجام شده</div>
+      <div id="done-column" class="card-container flex-1 overflow-y-auto p-4"></div>
+      <button class="bg-blue-500 text-white text-sm py-2 px-4 rounded hover:bg-blue-600 m-4" onclick="addCard('done-column')">افزودن کارت</button>
+    </div>
+
+  </div>
+
+  <!-- Comment Modal -->
+  <div id="comment-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4">نظرات</h3>
+      <div id="comment-list" class="comment-list"></div>
+      <textarea id="comment-input" class="w-full border border-gray-300 rounded-lg p-2" rows="2" placeholder="نظر خود را وارد کنید..."></textarea>
+      <div class="flex justify-end space-x-14 space-x-reverse mt-4">
+        <button class="bg-red-600 text-white text-sm py-2 px-4 mr-3 rounded hover:bg-gray-500" onclick="closeCommentModal()">لغو</button>
+        <button class="bg-blue-500 text-white text-sm py-2 px-4 rounded hover:bg-blue-600" onclick="addComment()">ارسال</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
