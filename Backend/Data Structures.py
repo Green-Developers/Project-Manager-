@@ -144,5 +144,55 @@ class PriorityQueue:
             values.append((current.value, current.priority))
             current = current.next
         return " -> ".join(f"{v[0]}(p{v[1]})" for v in values)
+# --------------------------------------------------------------------------------------
+class Stack:
+    def __init__(self, capacity=None):
+        self.top = None
+        self.capacity = capacity
+        self.current_size = 0
 
+    def push(self, item):
+        if self.capacity and self.current_size >= self.capacity:
+            raise OverflowError("Stack is full.")
+        new_node = Node(item)
+        new_node.next = self.top
+        self.top = new_node
+        self.current_size += 1
 
+    def pop(self):
+        if self.is_empty():
+            raise IndexError("Pop from an empty stack.")
+        popped_data = self.top.data
+        self.top = self.top.next
+        self.current_size -= 1
+        return popped_data
+
+    def peek(self):
+        if self.is_empty():
+            raise IndexError("Peek from an empty stack.")
+        return self.top.data
+
+    def empty(self):
+        self.top = None
+        self.current_size = 0
+
+    def is_empty(self):
+        return self.top is None
+
+    def is_full(self):
+        if self.capacity is None:
+            return False
+        return self.current_size >= self.capacity
+
+    def size(self):
+        return self.current_size
+
+    def reverse(self):
+        prev = None
+        current = self.top
+        while current is not None:
+            next_node = current.next
+            current.next = prev
+            prev = current
+            current = next_node
+        self.top = prev
