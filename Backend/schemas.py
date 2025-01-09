@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from typing import Optional
 
 class Token(BaseModel):
     access_token: str
@@ -22,13 +22,3 @@ class UserResponse(BaseModel):
 class UserInDB(UserResponse):
     hashed_password: str
 
-class ProjectCreate(BaseModel):
-    title: str
-    description: str
-    startDate: str
-    endDate: str
-    status: str
-
-class Project(ProjectCreate):
-    id: int
-    manager_id: int
