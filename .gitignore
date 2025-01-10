@@ -1,0 +1,7 @@
+# نادیده گرفتن پوشه zeinab
+zeinab/
+
+# نادیده گرفتن پوشه node_modules
+Frontend/node_modules/
+
+.DS_store

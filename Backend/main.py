@@ -1,26 +1,25 @@
 from fastapi import FastAPI
+from Backend.routers.users import router as user_router
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
-from routers import user,auth,projects
+from Backend.db.engine import engine
+from Backend.db import Base
 
-app = FastAPI(debug=True)
-
-origins = [
-    "*",
-]
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://localhost:5173"],  # Allow requests from this origin
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
 )
 
-app.include_router(user.router, prefix="/user")
-app.include_router(auth.router, prefix="/auth")
-app.include_router(projects.router, prefix="/projects")
+
+@app.on_event("startup")
+async def init_tables():
+    async with engine.begin() as conn:
+
+        await conn.run_sync(Base.metadata.create_all)
 
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+app.include_router(user_router, prefix="/Users")
