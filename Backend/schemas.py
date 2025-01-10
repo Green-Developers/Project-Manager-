@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 
 class Token(BaseModel):
     access_token: str
@@ -22,3 +23,12 @@ class UserResponse(BaseModel):
 class UserInDB(UserResponse):
     hashed_password: str
 
+
+class CreateProject(BaseModel):
+    title: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: datetime
+
+    class Config:
+        orm_mode = True

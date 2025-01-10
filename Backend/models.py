@@ -5,6 +5,7 @@ from datetime import datetime
 
 Base = declarative_base()
 
+# مدل کاربر
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -16,6 +17,7 @@ class User(Base):
     # ارتباط با پروژه‌ها
     projects = relationship("Project", back_populates="owner")
 
+# مدل پروژه
 class Project(Base):
     __tablename__ = "projects"
     id = Column(Integer, primary_key=True, index=True)
