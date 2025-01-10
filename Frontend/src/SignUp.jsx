@@ -57,12 +57,14 @@ function SignUp() {
               className="block text-gray-700 font-medium mb-2"
               htmlFor="full_name"
             >
-              Full Name
+              Username
             </label>
             <input
-              id="full_name"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+              id="username"
               type="text"
-              placeholder="Enter your full name"
+              placeholder="Enter your Username"
               className="w-full px-4 py-2 border-2 border-gray-200 rounded-md focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
             />
           </div>
@@ -74,8 +76,8 @@ function SignUp() {
               E-Mail Address
             </label>
             <input
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               id="email"
               type="email"
               placeholder="Enter your email"

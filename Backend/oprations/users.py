@@ -19,7 +19,20 @@ class Usersoprations:
         query = sa.select(User).where(User.username == username)
         async with self.db_session as session:
             result = await session.scalars(query)  # اصلاح برای دریافت داده‌ها
+            
             user = result.first()  # گرفتن اولین نتیجه (در صورت وجود)
+            if user is None:
+                raise ValueError("User not found")
+            return user
+        
+    async def login_user_by_username(self, username: str, 
+                                     password: str) -> User:
+        query = sa.select(User).where(
+            sa.and_(User.username == username, User.password == password)
+        )
+        async with self.db_session as session:
+            result = await session.scalars(query)
+            user = result.first()
             if user is None:
                 raise ValueError("User not found")
             return user

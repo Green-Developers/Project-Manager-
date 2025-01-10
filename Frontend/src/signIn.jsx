@@ -1,20 +1,38 @@
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function SignIn() {
-  const [count, setCount] = useState(0);
-  const [user, setUser] = useState({});
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  let navigate = useNavigate();
 
-  useEffect(() => {
-    async function getData() {
-      const res = await fetch("", {
-        method: "GET",
+  async function signIn(e) {
+    e.preventDefault();
+    try {
+      const res = await fetch("http://127.0.0.1:8000/Users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: userName,
+          password: password,
+        }),
       });
-      const data = await res.json();
-      setUser(data.results[0]);
-    }
 
-    getData();
-  }, [count]);
+      const resJson = await res.json();
+      if (res.status === 200) {
+        console.log("Login successful");
+        setUserName("");
+        setPassword("");
+        navigate("/", { replace: true });
+      } else {
+        console.log("Login failed:", resJson.detail);
+      }
+    } catch (e) {
+      console.log("Error:", e);
+    }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-blue-500 p-4">
@@ -30,18 +48,20 @@ function SignIn() {
             Please enter your details to sign in.
           </p>
 
-          <form className="w-full space-y-6">
+          <form className="w-full space-y-6" onSubmit={signIn}>
             <div className="mb-6">
               <label
                 className="block text-gray-700 font-medium mb-2"
-                htmlFor="email"
+                htmlFor="username"
               >
-                E-Mail Address
+                Username
               </label>
               <input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
+                id="username"
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Enter your username"
                 className="w-full px-4 py-2 border-2 border-gray-200 rounded-md focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
               />
             </div>
@@ -56,6 +76,8 @@ function SignIn() {
               <input
                 id="password"
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 className="w-full px-4 py-2 border-2 border-gray-200 rounded-md focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
               />

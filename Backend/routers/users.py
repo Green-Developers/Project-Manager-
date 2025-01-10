@@ -1,12 +1,19 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, HTTPException, Depends 
+from Backend.db.engine import get_db, get_session
 from Backend.schema._input import RegisterInput
-from Backend.db.engine import get_db
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from Backend.oprations.users import Usersoprations
-from fastapi import Depends
+from Backend.db.models import User
+from pydantic import BaseModel
 
 router = APIRouter()
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
 
 @router.post("/register")
@@ -21,7 +28,19 @@ async def register(
 
 
 @router.post("/login")
-async def login(): ...
+async def login(
+    request: LoginRequest, 
+    session: AsyncSession = Depends(get_session)
+):
+    query = select(User).where(User.username == request.username,
+                               User.password == request.password)
+    result = await session.execute(query)
+    user = result.scalars().first()
+    if user is None:
+        raise HTTPException(
+            status_code=401, detail="Invalid username or password"
+        )
+    return {"message": "Login successful"}
 
 
 @router.get("/{username}")

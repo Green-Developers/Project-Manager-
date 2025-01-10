@@ -1,7 +1,11 @@
 
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    async_sessionmaker,
+    create_async_engine,
+    AsyncSession,
+)
 from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
-
+from typing import AsyncGenerator
 SQLALCHAMY_DATABASE_URL = "sqlite+aiosqlite:///./blog.db"
 
 engine = create_async_engine(SQLALCHAMY_DATABASE_URL)
@@ -24,3 +28,8 @@ async def get_db():
         yield db
     finally:
         await db.close()
+
+
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async with SessionLocal() as session:
+        yield session
