@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 function SignIn() {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
@@ -28,6 +29,7 @@ function SignIn() {
         navigate("/", { replace: true });
       } else {
         console.log("Login failed:", resJson.detail);
+        alert("password or ussername is incorrect.")
       }
     } catch (e) {
       console.log("Error:", e);

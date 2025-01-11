@@ -21,6 +21,14 @@ async def register(
     db_session: Annotated[AsyncSession, Depends(get_db)],
     data: RegisterInput = Body(),
 ):
+    query = select(User).where(User.username == data.username)
+    result = await db_session.execute(query)
+    existing_user = result.scalars().first()
+    if existing_user:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"User with username {data.username} already exists"
+        )
     user = await Usersoprations(db_session).create(
         username=data.username, email=data.email, password=data.password
     )

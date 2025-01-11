@@ -22,11 +22,21 @@ function SignUp() {
         }),
       });
 
-      const resJson = await res.json();
-      console.log(resJson);
-      navigate("/", { replace: true });
+      if (res.status === 200) {
+        const resJson = await res.json();
+        console.log("Registration successful", resJson);
+        setUserName("");
+        setEmail("");
+        setPassword("");
+        navigate("/", { replace: true });
+      } else {
+        const resJson = await res.json();
+        console.log("Registration failed:", resJson.detail);
+        alert(resJson.detail);
+      }
     } catch (e) {
-      console.log(e);
+      console.log("Error:", e);
+      alert("An error occurred. Please try again.");
     }
   }
 
