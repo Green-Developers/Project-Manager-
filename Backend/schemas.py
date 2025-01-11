@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
+from enum import Enum
 
 class Token(BaseModel):
     access_token: str
@@ -43,6 +44,30 @@ class ProjectResponse(BaseModel):
     end_date: datetime
     owner_id: int
     employees: List[int]
+
+    class Config:
+        orm_mode = True
+
+# تعریف Enum برای وضعیت تسک
+class TaskStatus(str, Enum):
+    TO_DO = "to do"
+    DOING = "doing"
+    DONE = "done"
+
+class TaskBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    start_date: datetime
+    end_date: datetime
+    employee_id: int
+    status: TaskStatus = TaskStatus.TO_DO  # مقدار پیش‌فرض
+
+class TaskCreate(TaskBase):
+    project_id: int
+
+class TaskResponse(TaskBase):
+    id: int
+    project_id: int
 
     class Config:
         orm_mode = True

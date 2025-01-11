@@ -1,7 +1,10 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+from enum import Enum as PyEnum
+
+
 
 Base = declarative_base()
 
@@ -13,7 +16,6 @@ project_employees = Table(
     Column("user_id", Integer, ForeignKey("users.id"), primary_key=True)
 )
 
-# مدل کاربر
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -22,9 +24,10 @@ class User(Base):
     hashed_password = Column(String)
 
     projects = relationship("Project", secondary=project_employees, back_populates="employees")
+    tasks = relationship("Task", back_populates="employee", cascade="all, delete")
 
 
-# مدل پروژه
+
 class Project(Base):
     __tablename__ = "projects"
     id = Column(Integer, primary_key=True, index=True)
@@ -36,3 +39,26 @@ class Project(Base):
 
     owner = relationship("User", back_populates="projects")
     employees = relationship("User", secondary=project_employees, back_populates="projects")
+    tasks = relationship("Task", back_populates="project", cascade="all, delete")
+
+
+
+class TaskStatus(PyEnum):
+    TO_DO = "to do"
+    DOING = "doing"
+    DONE = "done"
+
+class Task(Base):
+    __tablename__ = "tasks"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    start_date = Column(DateTime, nullable=False, default=datetime.utcnow)
+    end_date = Column(DateTime, nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)  # ارتباط با پروژه
+    employee_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # ارتباط با کارمند
+    status = Column(Enum(TaskStatus), nullable=False, default=TaskStatus.TO_DO)  # وضعیت تسک
+
+    project = relationship("Project", back_populates="tasks")
+    employee = relationship("User", back_populates="tasks")
