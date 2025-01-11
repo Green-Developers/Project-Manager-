@@ -8,7 +8,7 @@ from auth.auth_handler import get_current_active_user
 
 router = APIRouter()
 
-@router.post("/projects/create", response_model=ProjectResponse)
+@router.post("/create", response_model=ProjectResponse)
 async def create_project(
     project: CreateProject,
     db: Session = Depends(get_db),
@@ -35,12 +35,12 @@ async def create_project(
     return new_project
 
 
-@router.get("/projects", response_model=list[ProjectResponse])
+@router.get("/", response_model=list[ProjectResponse])
 async def view_projects(db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
     return db.query(Project).all()
 
 
-@router.get("/projects/{project_id}", response_model=ProjectResponse)
+@router.get("/project/{project_id}", response_model=ProjectResponse)
 async def view_project(project_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
@@ -48,7 +48,7 @@ async def view_project(project_id: int, db: Session = Depends(get_db), current_u
     return project
 
 
-@router.put("/projects/{project_id}", response_model=ProjectResponse)
+@router.put("/project/{project_id}", response_model=ProjectResponse)
 async def update_project(
     project_id: int,
     project: CreateProject,
@@ -69,7 +69,7 @@ async def update_project(
     return db_project
 
 
-@router.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/project/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(project_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
     db_project = db.query(Project).filter(and_(Project.id == project_id, Project.owner_id == current_user.id)).first()
     if not db_project:
