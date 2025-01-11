@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class Token(BaseModel):
@@ -29,6 +29,7 @@ class CreateProject(BaseModel):
     description: Optional[str] = None
     start_date: Optional[datetime] = None
     end_date: datetime
+    employees: Optional[List[int]] = []
 
     class Config:
         orm_mode = True
