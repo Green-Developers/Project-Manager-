@@ -48,11 +48,7 @@ function SignUp() {
       <div className="bg-white shadow-2xl rounded-lg p-8 w-full max-w-md">
         <div className="flex justify-center mb-6">
           <div className="bg-gray-100 p-3 rounded-full shadow-md">
-            <img
-              src="https://via.placeholder.com/50"
-              alt="Logo"
-              className="h-12 w-12"
-            />
+          <img src="./login.png" className="logo w-16 h-16" alt="Vite logo" />
           </div>
         </div>
         <h2 className="text-center text-3xl font-extrabold text-gray-800 mb-4">
