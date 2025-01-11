@@ -1,10 +1,17 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
-from datastructures import LinkedList  # فرض می‌کنیم که این کلاس قبلاً تعریف شده
 
 Base = declarative_base()
+
+# جدول واسط بین پروژه‌ها و کاربران
+project_employees = Table(
+    "project_employees",
+    Base.metadata,
+    Column("project_id", Integer, ForeignKey("projects.id"), primary_key=True),
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True)
+)
 
 # مدل کاربر
 class User(Base):
@@ -14,25 +21,18 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
 
-    # ارتباط با پروژه‌ها
-    projects = relationship("Project", secondary="project_employees", back_populates="employees")
+    projects = relationship("Project", secondary=project_employees, back_populates="employees")
+
 
 # مدل پروژه
 class Project(Base):
     __tablename__ = "projects"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, unique=True, index=True)
-    description = Column(String, nullable=True, default=None)
+    description = Column(String, nullable=True)
     start_date = Column(DateTime, nullable=False, default=datetime.utcnow)
     end_date = Column(DateTime, nullable=False)
-    owner_id = Column(Integer, ForeignKey("users.id"))  # کلید خارجی
+    owner_id = Column(Integer, ForeignKey("users.id"))
 
-    # ارتباط با کاربر (مالک پروژه)
     owner = relationship("User", back_populates="projects")
-
-    # لیست کارمندان از نوع LinkedList
-    employees = None  # اینجا LinkedList ذخیره می‌شود
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.employees = LinkedList()  # مقداردهی اولیه LinkedList
+    employees = relationship("User", secondary=project_employees, back_populates="projects")

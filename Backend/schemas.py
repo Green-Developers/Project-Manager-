@@ -33,3 +33,16 @@ class CreateProject(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ProjectResponse(BaseModel):
+    id: int
+    title: str
+    description: Optional[str]
+    start_date: datetime
+    end_date: datetime
+    owner_id: int
+    employees: List[int]
+
+    class Config:
+        orm_mode = True
