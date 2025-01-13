@@ -10,7 +10,7 @@ function SignUp() {
   async function register(e) {
     e.preventDefault();
     try {
-      const res = await fetch("http://127.0.0.1:8000/Users/register", {
+      const res = await fetch("http://127.0.0.1:8000/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

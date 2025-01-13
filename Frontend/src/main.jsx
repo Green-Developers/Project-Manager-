@@ -15,11 +15,11 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/signup" element={<SignUp />} />
+        {/* <Route path="/signup" element={<SignUp />} /> */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/home" element={<Home />} />
         <Route path="/project" element={<Project />} />
-        <Route path="/" index element={<App />} />
+        <Route path="/" index element={<SignUp />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

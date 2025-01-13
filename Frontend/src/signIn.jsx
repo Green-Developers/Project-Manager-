@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, Link } from "react-router-dom";
 
 function SignIn() {
   const [userName, setUserName] = useState("");
@@ -10,15 +9,16 @@ function SignIn() {
   async function signIn(e) {
     e.preventDefault();
     try {
-      const res = await fetch("http://127.0.0.1:8000/Users/login", {
+      const formData = new URLSearchParams();
+      formData.append("username", userName);
+      formData.append("password", password);
+
+      const res = await fetch("http://127.0.0.1:8000/auth/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: JSON.stringify({
-          username: userName,
-          password: password,
-        }),
+        body: formData,
       });
 
       const resJson = await res.json();
@@ -29,10 +29,11 @@ function SignIn() {
         navigate("/", { replace: true });
       } else {
         console.log("Login failed:", resJson.detail);
-        alert("password or ussername is incorrect.")
+        alert("Password or username is incorrect.");
       }
     } catch (e) {
       console.log("Error:", e);
+      alert("An error occurred. Please try again.");
     }
   }
 
@@ -95,12 +96,12 @@ function SignIn() {
 
           <p className="text-center text-gray-600 mt-6 text-sm">
             Don't have an account?{" "}
-            <a
-              href="signUp.html"
+            <Link
               className="text-purple-600 font-medium hover:underline"
+              to="/"
             >
               Sign Up
-            </a>
+            </Link>
           </p>
         </div>
       </div>
