@@ -26,7 +26,7 @@ function SignIn() {
         console.log("Login successful");
         setUserName("");
         setPassword("");
-        navigate("/", { replace: true });
+        navigate("/home", { replace: true });
       } else {
         console.log("Login failed:", resJson.detail);
         alert("Password or username is incorrect.");
@@ -98,7 +98,7 @@ function SignIn() {
             Don't have an account?{" "}
             <Link
               className="text-purple-600 font-medium hover:underline"
-              to="/"
+              to="/signup"
             >
               Sign Up
             </Link>

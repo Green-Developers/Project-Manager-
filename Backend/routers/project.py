@@ -37,15 +37,25 @@ async def create_project(
 
 
 @router.get("/", response_model=list[ProjectResponse])
-async def view_projects(db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+async def view_projects(
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_active_user)
+):
     return db.query(Project).all()
 
 
 @router.get("/project/{project_id}", response_model=ProjectResponse)
-async def view_project(project_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+async def view_project(
+    project_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_active_user)
+):
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Project not found"
+        )
     return project
 
 
@@ -56,9 +66,14 @@ async def update_project(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    db_project = db.query(Project).filter(and_(Project.id == project_id, Project.owner_id == current_user.id)).first()
+    db_project = db.query(Project).filter(
+        and_(Project.id == project_id, Project.owner_id == current_user.id)
+    ).first()
     if not db_project:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Project not found"
+        )
 
     db_project.title = project.title
     db_project.description = project.description
@@ -72,9 +87,18 @@ async def update_project(
 
 
 @router.delete("/project/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_project(project_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
-    db_project = db.query(Project).filter(and_(Project.id == project_id, Project.owner_id == current_user.id)).first()
+async def delete_project(
+    project_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_active_user)
+):
+    db_project = db.query(Project).filter(
+        and_(Project.id == project_id, Project.owner_id == current_user.id)
+    ).first()
     if not db_project:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Project not found"
+        )
     db.delete(db_project)
     db.commit()

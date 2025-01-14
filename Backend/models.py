@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table, Enum
+from sqlalchemy import (
+    Column, Integer, String, DateTime, ForeignKey, Table, Enum
+)
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from enum import Enum as PyEnum
 
@@ -23,8 +25,12 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
 
-    projects = relationship("Project", secondary=project_employees, back_populates="employees")
-    tasks = relationship("Task", back_populates="employee", cascade="all, delete")
+    projects = relationship(
+        "Project", secondary=project_employees, back_populates="employees"
+    )
+    tasks = relationship(
+        "Task", back_populates="employee", cascade="all, delete"
+    )
 
 
 class Project(Base):
@@ -37,8 +43,12 @@ class Project(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="projects")
-    employees = relationship("User", secondary=project_employees, back_populates="projects")
-    tasks = relationship("Task", back_populates="project", cascade="all, delete")
+    employees = relationship(
+        "User", secondary=project_employees, back_populates="projects"
+    )
+    tasks = relationship(
+        "Task", back_populates="project", cascade="all, delete"
+    )
 
 
 class TaskStatus(PyEnum):
@@ -55,9 +65,12 @@ class Task(Base):
     description = Column(String, nullable=True)
     start_date = Column(DateTime, nullable=False, default=datetime.utcnow)
     end_date = Column(DateTime, nullable=False)
-    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)  # ارتباط با پروژه
-    employee_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # ارتباط با کارمند
-    status = Column(Enum(TaskStatus), nullable=False, default=TaskStatus.TO_DO)  # وضعیت تسک
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)  
+    # ارتباط با پروژه
+    employee_id = Column(Integer, ForeignKey("users.id"), nullable=False)  
+    # ارتباط با کارمند
+    status = Column(Enum(TaskStatus), nullable=False, default=TaskStatus.TO_DO) 
+     # وضعیت تسک
 
     project = relationship("Project", back_populates="tasks")
     employee = relationship("User", back_populates="tasks")
