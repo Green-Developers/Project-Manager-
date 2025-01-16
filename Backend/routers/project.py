@@ -15,7 +15,6 @@ async def create_project(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    # ایجاد پروژه جدید
     new_project = Project(
         title=project.title,
         description=project.description,
@@ -27,7 +26,6 @@ async def create_project(
     db.commit()
     db.refresh(new_project)
 
-    # اضافه کردن کارمندان به پروژه
     if project.employees:
         employees = db.query(User).filter(User.id.in_(project.employees)).all()
         new_project.employees.extend(employees)
@@ -41,7 +39,7 @@ async def view_projects(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_active_user)
 ):
-    return db.query(Project).filter(Project.owner_id == current_user.id or current_user in Project.employees)
+    return db.query(Project).filter(Project.owner_id == current_user.id).all()
 
 
 @router.get("/project/{project_id}", response_model=ProjectResponse)
@@ -51,19 +49,24 @@ async def view_project(
     current_user: User = Depends(get_current_active_user)
 ):
     project = db.query(Project).filter(Project.id == project_id).first()
-    permision = Project.owner_id == current_user.id or current_user in Project.employees
+
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
             detail="Project not found"
-    )
-    elif not permision:
-        raise HTTPException(
-            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-            detail="you are not allowded for this operation"
         )
-    else:
-        return project
+
+    is_owner = project.owner_id == current_user.id
+    is_employee = any(user.id == current_user.id for user in project.employees)
+
+    if not (is_owner or is_employee):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to access this project"
+        )
+
+    return project
+
 
 
 @router.put("/project/{project_id}", response_model=ProjectResponse)
@@ -99,17 +102,19 @@ async def delete_project(
     current_user: User = Depends(get_current_active_user)
 ):
     db_project = db.query(Project).filter(Project.id == project_id).first()
-    permision = Project.owner_id == current_user.id
+
     if not db_project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
             detail="Project not found"
         )
-    elif not permision:
+
+    if db_project.owner_id != current_user.id:
         raise HTTPException(
-            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-            detail="you are not allowded for this operation"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to delete this project"
         )
-    else:
-        db.delete(db_project)
-        db.commit()
+
+    db.delete(db_project)
+    db.commit()
+
