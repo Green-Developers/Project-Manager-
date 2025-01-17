@@ -37,6 +37,8 @@ const Board = () => {
       ...prev,
       [columnId]: [...prev[columnId], newCard],
     }));
+
+     
   };
 
   // ویرایش کارت

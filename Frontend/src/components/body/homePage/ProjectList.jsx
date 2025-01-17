@@ -55,7 +55,7 @@ const ProjectList = ({ projects, onDelete, onEdit }) => {
               + کاربر
             </button>
             <Link
-              to="/project_page"
+              to={`/project_page/${project.id}`}
               className="bg-gradient-to-r from-green-500 to-teal-500 text-white py-2 px-4 rounded-full shadow-md hover:shadow-lg transform hover:scale-105 transition-all w-full sm:w-auto"
             >
               مشاهده پروژه
