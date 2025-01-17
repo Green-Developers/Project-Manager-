@@ -21,8 +21,14 @@ const ProjectList = ({ projects, onDelete, onEdit }) => {
           <h3 className="text-xl font-semibold mb-2 text-indigo-600">
             {project.title}
           </h3>
-          <p className="text-gray-600 mb-2">تاریخ شروع: {project.startDate}</p>
-          <p className="text-gray-600 mb-2">تاریخ پایان: {project.endDate}</p>
+          <p className="text-gray-600 mb-2">
+            تاریخ شروع:{" "}
+            {new Date(project.start_date).toLocaleDateString("fa-IR")}
+          </p>
+          <p className="text-gray-600 mb-2">
+            تاریخ پایان:{" "}
+            {new Date(project.end_date).toLocaleDateString("fa-IR")}
+          </p>
           <p className={`font-bold ${getStatusColor(project.status)}`}>
             وضعیت: {project.status}
           </p>
@@ -71,8 +77,8 @@ const getStatusColor = (status) => {
   return status === "در حال انجام"
     ? "text-green-600"
     : status === "معلق"
-    ? "text-yellow-500"
-    : "text-red-600";
+      ? "text-yellow-500"
+      : "text-red-600";
 };
 
 export default ProjectList;

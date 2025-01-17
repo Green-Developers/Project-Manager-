@@ -28,7 +28,7 @@ function SignUp() {
         setUserName("");
         setEmail("");
         setPassword("");
-        navigate("/home", { replace: true });
+        navigate("/signin", { replace: true });
       } else {
         const resJson = await res.json();
         console.log("Registration failed:", resJson.detail);

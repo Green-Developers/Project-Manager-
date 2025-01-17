@@ -9,7 +9,7 @@ import {
   convertPersianToEnglish,
 } from "../../../Utils/utils";
 
-const ProjectForm = ({ project, onSave, onCancel }) => {
+const ProjectForm = ({ project, onSave, onCancel, setIsFormVisible }) => {
   const [formData, setFormData] = useState({
     title: project?.title || "",
     start_date: project?.start_date || null,
@@ -41,6 +41,7 @@ const ProjectForm = ({ project, onSave, onCancel }) => {
       if (res.status === 200) {
         const resJson = await res.json();
         console.log("Registration successful", resJson);
+        setIsFormVisible(false);
         alert("project created successfully");
       } else {
         const resJson = await res.json();

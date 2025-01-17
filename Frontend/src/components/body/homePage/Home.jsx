@@ -3,6 +3,7 @@ import Header from "../../header/Header";
 import ProjectManager from "./ProjectManager";
 
 const Home = () => {
+  
   return (
     <div className="font-[Vazir] bg-gradient-to-br from-indigo-300 to-pink-300 min-h-screen flex flex-col">
       <Header  />

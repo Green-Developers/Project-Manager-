@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ProjectList from "./ProjectList";
 import ProjectForm from "./ProjectForm";
 
@@ -31,6 +31,31 @@ const ProjectManager = () => {
     setIsFormVisible(true);
   };
 
+  useEffect(() => {
+    async function getProjects() {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/projects", {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+          method: "GET",
+        });
+  
+        if (!res.ok) {
+          throw new Error(`error: ${res.status} - ${res.statusText}`);
+        }
+  
+        const resJson = await res.json();
+        console.log(resJson);
+        setProjects(resJson);
+      } catch (error) {
+        console.error("There is a problem receiving your project:", error);
+      }
+    }
+  
+    getProjects();
+  }, [isFormVisible]);
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
       <button
@@ -49,6 +74,7 @@ const ProjectManager = () => {
       />
       {isFormVisible && (
         <ProjectForm
+          setIsFormVisible={setIsFormVisible}
           project={editingProject}
           onSave={addOrEditProject}
           onCancel={() => setIsFormVisible(false)}
