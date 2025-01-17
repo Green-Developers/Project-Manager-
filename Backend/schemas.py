@@ -30,7 +30,7 @@ class UserInDB(UserResponse):
 
 class CreateProject(BaseModel):
     title: str
-    description: Optional[str] = None
+    status: Optional[str] = None
     start_date: Optional[datetime] = None
     end_date: datetime
     employees: Optional[List[int]] = []
@@ -42,7 +42,7 @@ class CreateProject(BaseModel):
 class ProjectResponse(BaseModel):
     id: int
     title: str
-    description: Optional[str]
+    status: Optional[str]
     start_date: datetime
     end_date: datetime
     owner_id: int
@@ -66,6 +66,8 @@ class TaskBase(BaseModel):
     start_date: datetime
     end_date: datetime
     employee_id: int
+    status: TaskStatus = TaskStatus.TO_DO  # مقدار پیش‌فرض
+
 
 class TaskCreate(TaskBase):
     project_id: int

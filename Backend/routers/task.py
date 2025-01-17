@@ -1,17 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
-from typing import List
 from Backend.database import get_db
-from Backend.models import Task, Project, User, TaskStatus
+from Backend.models import Task, Project, User
 from Backend.schemas import TaskCreate, TaskResponse, TaskBase
 from Backend.auth.auth_handler import get_current_active_user
-from Backend.datastructures import PriorityQueue
+from sqlalchemy import and_
+from typing import List
 
-
-todo_queue = PriorityQueue()
-doing_queue = PriorityQueue()
-done_queue = PriorityQueue()
 
 router = APIRouter()
 
@@ -23,13 +18,12 @@ async def create_task(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    db_project = db.query(Project).filter(Project.id == project_id).first()
-    permission = db_project and db_project.owner_id == current_user.id
-
-    if not db_project:
+    project = db.query(Project).filter(Project.id == project_id).first()
+    permision = Project.owner_id == current_user.id 
+    if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-    elif not permission:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to perform this operation")
+    elif not permision:
+        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail="you are not allowded for this operation")
     else:
         new_task = Task(
             name=task.name,
@@ -38,56 +32,22 @@ async def create_task(
             end_date=task.end_date,
             project_id=project_id,
             employee_id=task.employee_id,
-            status=TaskStatus.TO_DO  # مقدار پیش‌فرض
+            status=task.status 
         )
         db.add(new_task)
         db.commit()
         db.refresh(new_task)
-
-        # اضافه کردن به صف todo به دلیل وضعیت پیش‌فرض
-        todo_queue.enqueue(new_task)
-
         return new_task
 
 
 
-@router.get("/{project_id}/tasks/todo", response_model=List[TaskResponse])
-async def get_todo_tasks(project_id: int, db: Session = Depends(get_db)):
-    """
-    دریافت تسک‌های TO_DO
-    """
-    tasks = db.query(Task).filter(
-        and_(Task.project_id == project_id, Task.status == TaskStatus.TO_DO)
-    ).all()
-    for task in tasks:
-        todo_queue.enqueue(task)
-    return [todo_queue.dequeue() for _ in range(len(todo_queue))]
-
-
-@router.get("/{project_id}/tasks/doing", response_model=List[TaskResponse])
-async def get_doing_tasks(project_id: int, db: Session = Depends(get_db)):
-    """
-    دریافت تسک‌های DOING
-    """
-    tasks = db.query(Task).filter(
-        and_(Task.project_id == project_id, Task.status == "doing")
-    ).all()
-    for task in tasks:
-        doing_queue.enqueue(task)
-    return [doing_queue.dequeue() for _ in range(len(doing_queue))]
-
-
-@router.get("/{project_id}/tasks/done", response_model=List[TaskResponse])
-async def get_done_tasks(project_id: int, db: Session = Depends(get_db)):
-    """
-    دریافت تسک‌های DONE
-    """
-    tasks = db.query(Task).filter(
-        and_(Task.project_id == project_id, Task.status == "done")
-    ).all()
-    for task in tasks:
-        done_queue.enqueue(task)
-    return [done_queue.dequeue() for _ in range(len(done_queue))]
+@router.get("/{project_id}/tasks", response_model=List[TaskResponse])
+async def get_project_tasks(
+    project_id: int, 
+    db: Session = Depends(get_db)
+    ):
+    tasks = db.query(Task).filter(Task.project_id == project_id).all()
+    return tasks
 
 
 @router.put("/tasks/{task_id}", response_model=TaskResponse)
@@ -107,34 +67,42 @@ async def update_task(
     
     if current_user.id != db_project.owner_id and current_user.id != db_task.employee_id:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
             detail="You are not allowed to update this task"
         )
-
-    # حذف از صف قبلی و افزودن به صف جدید در صورت تغییر وضعیت
-    if db_task.status != task.status:
-        if db_task.status == "to do":
-            todo_queue.dequeue()
-        elif db_task.status == "doing":
-            doing_queue.dequeue()
-        elif db_task.status == "done":
-            done_queue.dequeue()
-
-        # افزودن به صف جدید
-        if task.status == "to do":
-            todo_queue.enqueue(db_task)
-        elif task.status == "doing":
-            doing_queue.enqueue(db_task)
-        elif task.status == "done":
-            done_queue.enqueue(db_task)
 
     db_task.name = task.name
     db_task.description = task.description
     db_task.start_date = task.start_date
     db_task.end_date = task.end_date
     db_task.employee_id = task.employee_id
-    db_task.status = task.status
+    db_task.status = task.status 
 
     db.commit()
     db.refresh(db_task)
     return db_task
+
+
+
+@router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_task(
+    task_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    db_task = db.query(Task).filter(Task.id == task_id).first()
+    if not db_task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+    
+    db_project = db.query(Project).filter(Project.id == db_task.project_id).first()
+    if not db_project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    if current_user.id != db_project.owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the project owner can delete tasks"
+        )
+
+    db.delete(db_task)
+    db.commit()

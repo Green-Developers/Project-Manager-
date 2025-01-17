@@ -17,7 +17,7 @@ async def create_project(
 ):
     new_project = Project(
         title=project.title,
-        description=project.description,
+        status=project.status,
         start_date=project.start_date,
         end_date=project.end_date,
         owner_id=current_user.id

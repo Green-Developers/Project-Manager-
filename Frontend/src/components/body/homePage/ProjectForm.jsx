@@ -2,22 +2,62 @@ import React, { useState } from "react";
 import DatePicker from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
+import gregorian from "react-date-object/calendars/gregorian";
+import {
+  convertJalaliToGregorian,
+  convertJalaliToGregorianISO,
+  convertPersianToEnglish,
+} from "../../../Utils/utils";
 
 const ProjectForm = ({ project, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     title: project?.title || "",
-    startDate: project?.startDate || null,
-    endDate: project?.endDate || null,
+    start_date: project?.start_date || null,
+    end_date: project?.end_date || null,
     status: project?.status || "در حال انجام",
+    employees: [],
+    // owner_id: current_user?.id
   });
 
+  async function createNewProject() {
+    formData.start_date = convertJalaliToGregorianISO(
+      convertPersianToEnglish(formData.start_date)
+    );
+
+    formData.end_date = convertJalaliToGregorianISO(
+      convertPersianToEnglish(formData.end_date)
+    );
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/projects/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+        body: JSON.stringify(formData),
+      });
+      console.log(res);
+      if (res.status === 200) {
+        const resJson = await res.json();
+        console.log("Registration successful", resJson);
+        alert("project created successfully");
+      } else {
+        const resJson = await res.json();
+        alert(resJson.detail);
+      }
+    } catch (e) {
+      console.log("Error:", e);
+      alert("An error occurred. Please try again.");
+    }
+  }
   const handleSave = (e) => {
     e.preventDefault();
-    if (!formData.startDate || !formData.endDate) {
+    if (!formData.start_date || !formData.end_date) {
       alert("لطفاً تاریخ‌های شروع و پایان را وارد کنید.");
       return;
     }
-    onSave(formData);
+    createNewProject();
   };
 
   return (
@@ -47,10 +87,13 @@ const ProjectForm = ({ project, onSave, onCancel }) => {
                 تاریخ شروع
               </label>
               <DatePicker
-                value={formData.startDate}
-                onChange={(date) =>
-                  setFormData({ ...formData, startDate: date?.format("YYYY/MM/DD") })
-                }
+                value={formData.start_date}
+                onChange={(date) => {
+                  setFormData({
+                    ...formData,
+                    start_date: date?.format("YYYY/MM/DD"),
+                  });
+                }}
                 calendar={persian}
                 locale={persian_fa}
                 inputClass="mt-1 block w-full rounded-lg border-gray-300 shadow-md focus:ring-indigo-500 focus:border-indigo-500"
@@ -63,9 +106,12 @@ const ProjectForm = ({ project, onSave, onCancel }) => {
                 تاریخ پایان
               </label>
               <DatePicker
-                value={formData.endDate}
+                value={formData.end_date}
                 onChange={(date) =>
-                  setFormData({ ...formData, endDate: date?.format("YYYY/MM/DD") })
+                  setFormData({
+                    ...formData,
+                    end_date: date?.format("YYYY/MM/DD"),
+                  })
                 }
                 calendar={persian}
                 locale={persian_fa}

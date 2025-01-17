@@ -21,53 +21,56 @@ project_employees = Table(
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(50), unique=True, index=True, nullable=False)
-    email = Column(String(100), unique=True, index=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
+    username = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
 
     projects = relationship(
-        "Project", secondary=project_employees, back_populates="employees", lazy="select"
+        "Project", secondary=project_employees, back_populates="employees"
     )
     tasks = relationship(
-        "Task", back_populates="employee", cascade="all, delete", lazy="select"
+        "Task", back_populates="employee", cascade="all, delete"
     )
 
 
 class Project(Base):
     __tablename__ = "projects"
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(100), unique=True, index=True, nullable=False)
-    description = Column(String(500), nullable=True)
+    title = Column(String, nullable=False)
+    status = Column(String, nullable=True)
     start_date = Column(DateTime, nullable=False, default=datetime.utcnow)
     end_date = Column(DateTime, nullable=False)
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    owner_id = Column(Integer, ForeignKey("users.id"))
 
-    owner = relationship("User", back_populates="projects", lazy="joined")
+    owner = relationship("User", back_populates="projects")
     employees = relationship(
-        "User", secondary=project_employees, back_populates="projects", lazy="select"
+        "User", secondary=project_employees, back_populates="projects"
     )
     tasks = relationship(
-        "Task", back_populates="project", cascade="all, delete", lazy="select"
+        "Task", back_populates="project", cascade="all, delete"
     )
 
 
-class TaskStatus(str, PyEnum):
-    TO_DO = "TO_DO"
-    DOING = "DOING"
-    DONE = "DONE"
+class TaskStatus(PyEnum):
+    TO_DO = "to do"
+    DOING = "doing"
+    DONE = "done"
 
 
 class Task(Base):
     __tablename__ = "tasks"
     
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False, index=True)
-    description = Column(String(500), nullable=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
     start_date = Column(DateTime, nullable=False, default=datetime.utcnow)
     end_date = Column(DateTime, nullable=False)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)  
+    # ارتباط با پروژه
     employee_id = Column(Integer, ForeignKey("users.id"), nullable=False)  
+    # ارتباط با کارمند
     status = Column(Enum(TaskStatus), nullable=False, default=TaskStatus.TO_DO) 
+     # وضعیت تسک
 
-    project = relationship("Project", back_populates="tasks", lazy="joined")
-    employee = relationship("User", back_populates="tasks", lazy="joined")
+    project = relationship("Project", back_populates="tasks")
+    employee = relationship("User", back_populates="tasks")

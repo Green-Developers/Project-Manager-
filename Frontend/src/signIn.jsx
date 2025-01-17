@@ -23,6 +23,7 @@ function SignIn() {
 
       const resJson = await res.json();
       if (res.status === 200) {
+        localStorage.setItem("token", resJson.access_token);
         console.log("Login successful");
         setUserName("");
         setPassword("");
