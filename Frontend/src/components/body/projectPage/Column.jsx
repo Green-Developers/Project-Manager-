@@ -21,12 +21,16 @@ const Column = ({ title, cards, onAddCard, onOpenModal, onEdit, onDelete, bgColo
           />
         ))}
       </div>
-      <button
-        className="bg-blue-600 text-white text-sm py-2 px-4 rounded hover:bg-blue-700 m-4 transition-transform transform hover:scale-105 shadow-lg"
-        onClick={onAddCard}
-      >
-        + افزودن کارت
-      </button>
+    {/* Conditional rendering for the add card button */}
+    {onAddCard && (
+        <button
+          className="bg-blue-600 text-white text-sm py-2 px-4 rounded hover:bg-blue-700 m-4 transition-transform transform hover:scale-105 shadow-lg"
+          onClick={onAddCard}
+        >
+          + افزودن کارت
+        </button>
+      )}
+      {/* End of conditional rendering for the add card button */}
     </div>
   );
 };
