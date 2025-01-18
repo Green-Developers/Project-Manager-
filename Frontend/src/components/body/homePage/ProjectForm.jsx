@@ -14,7 +14,7 @@ const ProjectForm = ({ project, onSave, onCancel, setIsFormVisible }) => {
     title: project?.title || "",
     start_date: project?.start_date || null,
     end_date: project?.end_date || null,
-    status: project?.status || "در حال انجام",
+    status: project?.status || "معلق",
     employees: [],
     // owner_id: current_user?.id
   });
@@ -133,8 +133,8 @@ const ProjectForm = ({ project, onSave, onCancel, setIsFormVisible }) => {
               }
               className="mt-1 block w-full rounded-lg border-gray-300 shadow-md focus:ring-indigo-500 focus:border-indigo-500"
             >
-              <option value="در حال انجام">در حال انجام</option>
               <option value="معلق">معلق</option>
+              <option value="در حال انجام">در حال انجام</option>   
               <option value="تکمیل شده">تکمیل شده</option>
             </select>
           </div>
