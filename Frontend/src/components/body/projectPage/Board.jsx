@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Column from "./Column";
-import Modal from "./Modal";
-import DatePicker from "react-multi-date-picker";
-import persian from "react-date-object/calendars/persian";
-import persian_fa from "react-date-object/locales/persian_fa";
+import Modals from "./Modals";
+import CommentsModal from "./CommentsModal";
 
 const Board = () => {
   const [isAccordionView, setIsAccordionView] = useState(false);
@@ -14,7 +12,6 @@ const Board = () => {
     done: [],
   });
   const [currentCard, setCurrentCard] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAddCardModalVisible, setIsAddCardModalVisible] = useState(false);
   const [newCardInfo, setNewCardInfo] = useState({
     name: "",
@@ -25,17 +22,14 @@ const Board = () => {
     endDate: null,
   });
   const [isEditMode, setIsEditMode] = useState(false);
-
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState([]);
+  const [showEmployeeList, setShowEmployeeList] = useState(false);
 
-  // شناسایی حالت ریسپانسیو (آکاردئون یا سه ستونی)
   useEffect(() => {
     const handleResize = () => {
-      setIsAccordionView(window.innerWidth < 1024); // عرض کمتر از 1024px
+      setIsAccordionView(window.innerWidth < 1024);
     };
-    handleResize(); // برای بار اول
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -58,13 +52,15 @@ const Board = () => {
   const saveCard = () => {
     if (!newCardInfo.name.trim() || !newCardInfo.description.trim()) return;
 
-    const targetColumnId = newCardInfo.status; // ستون مناسب بر اساس وضعیت
+    const targetColumnId = newCardInfo.status;
 
     if (isEditMode) {
       setColumns((prev) => {
         const updatedColumns = {
           ...prev,
-          [currentCard.status]: prev[currentCard.status].filter((card) => card.id !== currentCard.id),
+          [currentCard.status]: prev[currentCard.status].filter(
+            (card) => card.id !== currentCard.id
+          ),
         };
         updatedColumns[targetColumnId] = [
           ...updatedColumns[targetColumnId],
@@ -100,6 +96,11 @@ const Board = () => {
     }));
   };
 
+  const getCardTitles = () => {
+    return Object.keys(columns)
+      .flatMap((key) => columns[key].map((card) => card.name));
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
       {isAccordionView ? (
@@ -110,7 +111,11 @@ const Board = () => {
                 className="w-full text-right bg-gray-200 py-2 px-4 rounded shadow"
                 onClick={() => setExpanded(expanded === key ? null : key)}
               >
-                {key === "todo" ? "کارها" : key === "doing" ? "در حال انجام" : "انجام شده"}
+                {key === "todo"
+                  ? "کارها"
+                  : key === "doing"
+                  ? "در حال انجام"
+                  : "انجام شده"}
               </button>
               {expanded === key && (
                 <div className="mt-2">
@@ -167,118 +172,19 @@ const Board = () => {
         </div>
       )}
 
-      {isAddCardModalVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h3 className="text-lg font-bold mb-4">
-              {isEditMode ? "ویرایش کارت" : "افزودن کارت جدید"}
-            </h3>
-            <input
-              type="text"
-              placeholder="عنوان کارت"
-              value={newCardInfo.name}
-              onChange={(e) =>
-                setNewCardInfo((prev) => ({ ...prev, name: e.target.value }))
-              }
-              className="w-full border border-gray-300 rounded-lg p-2 mb-4"
-            />
-            <textarea
-              placeholder="توضیحات کارت"
-              value={newCardInfo.description}
-              onChange={(e) =>
-                setNewCardInfo((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              className="w-full border border-gray-300 rounded-lg p-2 mb-4"
-              rows="3"
-            />
-            <input
-              type="text"
-              placeholder="نام کارمند"
-              value={newCardInfo.employee}
-              onChange={(e) =>
-                setNewCardInfo((prev) => ({
-                  ...prev,
-                  employee: e.target.value,
-                }))
-              }
-              className="w-full border border-gray-300 rounded-lg p-2 mb-4"
-            />
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  تاریخ شروع
-                </label>
-                <DatePicker
-                  value={newCardInfo.startDate}
-                  onChange={(date) =>
-                    setNewCardInfo((prev) => ({
-                      ...prev,
-                      startDate: date?.format("YYYY/MM/DD"),
-                    }))
-                  }
-                  calendar={persian}
-                  locale={persian_fa}
-                  inputClass="mt-1 block w-full rounded-lg border-gray-300 shadow-md focus:ring-indigo-500 focus:border-indigo-500"
-                  format="YYYY/MM/DD"
-                  placeholder="تاریخ شروع را انتخاب کنید"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  تاریخ پایان
-                </label>
-                <DatePicker
-                  value={newCardInfo.endDate}
-                  onChange={(date) =>
-                    setNewCardInfo((prev) => ({
-                      ...prev,
-                      endDate: date?.format("YYYY/MM/DD"),
-                    }))
-                  }
-                  calendar={persian}
-                  locale={persian_fa}
-                  inputClass="mt-1 block w-full rounded-lg border-gray-300 shadow-md focus:ring-indigo-500 focus:border-indigo-500"
-                  format="YYYY/MM/DD"
-                  placeholder="تاریخ پایان را انتخاب کنید"
-                />
-              </div>
-            </div>
-            <select
-              value={newCardInfo.status}
-              onChange={(e) =>
-                setNewCardInfo((prev) => ({
-                  ...prev,
-                  status: e.target.value,
-                }))
-              }
-              className="w-full border border-gray-300 rounded-lg p-2 mb-4"
-            >
-              <option value="todo">معلق</option>
-              <option value="doing">در حال انجام</option>
-              <option value="done">انجام شده</option>
-            </select>
-            <div className="flex justify-end space-x-4">
-              <button
-                className="bg-red-500 text-white text-sm py-2 px-4 rounded hover:bg-red-600 transition"
-                onClick={() => setIsAddCardModalVisible(false)}
-              >
-                لغو
-              </button>
-              <button
-                className="bg-blue-500 text-white text-sm py-2 px-4 rounded hover:bg-blue-600 transition"
-                onClick={saveCard}
-              >
-                ذخیره
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* دکمه نظردهی */}
+      {/* دکمه‌های پایین */}
+      <button
+        className="fixed bottom-28 left-4 bg-purple-600 text-white p-3 mb-5 rounded-full shadow-lg hover:bg-purple-700 transition"
+        onClick={() => alert("این دکمه عملکرد دیگری دارد!")}
+      >
+        دکمه جدید
+      </button>
+      <button
+        className="fixed bottom-16 left-4 bg-green-600 text-white p-3 mb-3 rounded-full shadow-lg hover:bg-green-700 transition"
+        onClick={() => setShowEmployeeList(!showEmployeeList)}
+      >
+        نمایش کاربران
+      </button>
       <button
         className="fixed bottom-4 left-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
         onClick={() => setIsCommentModalVisible(true)}
@@ -286,46 +192,38 @@ const Board = () => {
         نظر دهید
       </button>
 
-      {isCommentModalVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
-            <h3 className="text-lg font-bold mb-4">ارسال نظر</h3>
-            <textarea
-              placeholder="نظر خود را بنویسید..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-2 mb-4"
-              rows="4"
-            />
-            <div className="flex justify-between">
-              <button
-                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
-                onClick={() => setIsCommentModalVisible(false)}
-              >
-                بستن
-              </button>
-              <button
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
-                onClick={() => {
-                  if (comment.trim()) {
-                    setComments((prev) => [comment, ...prev]);
-                    setComment("");
-                  }
-                }}
-              >
-                ارسال
-              </button>
-            </div>
-            <div className="mt-4">
-              {comments.map((c, index) => (
-                <p key={index} className="border-b border-gray-300 pb-2 mb-2">
-                  {c}
-                </p>
-              ))}
-            </div>
-          </div>
+      {/* نمایش لیست کاربران */}
+      {showEmployeeList && (
+        <div className="absolute bottom-40 left-4 bg-white p-4 rounded-lg shadow-lg w-64">
+          <h3 className="text-lg font-bold mb-2">لیست کاربران</h3>
+          <ul className="space-y-2">
+            {/* اینجا لیست کاربرا رو بزار */}
+            {["Ali", "Sara", "Reza"].map((employee, index) => (
+              <li key={index} className="text-gray-700">
+                {employee}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
+
+      {/* مدال‌ها */}
+      <CommentsModal
+        isVisible={isCommentModalVisible}
+        onClose={() => setIsCommentModalVisible(false)}
+        onSubmit={(newComment) => console.log("New comment:", newComment)}
+        cardTitles={getCardTitles()}
+        username="نام کاربر"
+      />
+
+      <Modals
+        isAddCardModalVisible={isAddCardModalVisible}
+        setIsAddCardModalVisible={setIsAddCardModalVisible}
+        newCardInfo={newCardInfo}
+        setNewCardInfo={setNewCardInfo}
+        isEditMode={isEditMode}
+        saveCard={saveCard}
+      />
     </div>
   );
 };
