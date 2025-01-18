@@ -44,12 +44,7 @@ async def create_task(
         db.commit()
         db.refresh(new_task)
 
-        if status == TaskStatus.TO_DO:
-            todo_queue.enqueue(new_task)
-        elif status == TaskStatus.DOING:
-            doing_queue.enqueue(new_task)
-        elif status == TaskStatus.DONE:
-            done_queue.enqueue(new_task)
+        todo_queue.enqueue(new_task)
 
         return new_task
 
