@@ -1,4 +1,7 @@
 from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime
+from enum import Enum
 
 
 class Token(BaseModel):
@@ -15,20 +18,65 @@ class UserCreate(BaseModel):
     email: str
     password: str
 
+
 class UserResponse(BaseModel):
     username: str
     email: str | None = None
 
+
 class UserInDB(UserResponse):
     hashed_password: str
 
-class ProjectCreate(BaseModel):
-    title: str
-    description: str
-    startDate: str
-    endDate: str
-    status: str
 
-class Project(ProjectCreate):
+class CreateProject(BaseModel):
+    title: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: datetime
+    employees: Optional[List[int]] = []
+
+    class Config:
+        orm_mode = True
+
+
+class ProjectResponse(BaseModel):
     id: int
-    manager_id: int
+    title: str
+    description: Optional[str]
+    start_date: datetime
+    end_date: datetime
+    owner_id: int
+    employees: List[int]
+
+    class Config:
+        orm_mode = True
+
+# تعریف Enum برای وضعیت تسک
+
+
+class TaskStatus(str, Enum):
+    TO_DO = "to do"
+    DOING = "doing"
+    DONE = "done"
+
+
+class TaskBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    start_date: datetime
+    end_date: datetime
+    employee_id: int
+
+class TaskCreate(TaskBase):
+    project_id: int
+
+
+class TaskResponse(TaskBase):
+    id: int
+    project_id: int
+
+    class Config:
+        orm_mode = True
+
+class AddEmployeesRequest(BaseModel):
+    employees: list[int]
