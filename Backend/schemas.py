@@ -79,3 +79,6 @@ class TaskResponse(TaskBase):
 
     class Config:
         orm_mode = True
+
+class AddEmployeesRequest(BaseModel):
+    employees: list[int]

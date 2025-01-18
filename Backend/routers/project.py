@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from Backend.database import get_db
 from Backend.models import Project, User
-from Backend.schemas import CreateProject, ProjectResponse 
+from Backend.schemas import CreateProject, ProjectResponse ,AddEmployeesRequest
 from Backend.auth.auth_handler import get_current_active_user
 
 router = APIRouter()
@@ -102,3 +102,34 @@ async def delete_project(
         )
     db.delete(db_project)
     db.commit()
+
+@router.post("/project/{project_id}/add-employees", status_code=status.HTTP_200_OK)
+async def add_employees_to_project(
+    project_id: int,
+    request: AddEmployeesRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    # Check if the project exists and the user is the owner
+    project = db.query(Project).filter(
+        Project.id == project_id, Project.owner_id == current_user.id
+    ).first()
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found or you do not have permission to modify it."
+        )
+    
+    # Fetch employees by IDs
+    employees = db.query(User).filter(User.id.in_(request.employees)).all()
+    if not employees:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No valid employees found with the provided IDs."
+        )
+    
+    # Add employees to the project
+    project.employees.extend(employees)
+    db.commit()
+    
+    return {"message": "Employees added successfully", "employees": [e.id for e in employees]}
