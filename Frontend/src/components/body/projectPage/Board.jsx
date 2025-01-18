@@ -1,11 +1,60 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import Column from "./Column";
-import Modal from "./Modal";
-import DatePicker from "react-multi-date-picker";
-import persian from "react-date-object/calendars/persian";
-import persian_fa from "react-date-object/locales/persian_fa";
+import Modals from "./Modals";
+import CommentsModal from "./CommentsModal";
 
-const Board = () => {
+
+// تابع Project به صورت جداگانه
+const Board = ({ projectId ,card}) => {
+  const [formData, setFormData] = useState({
+    name: card?.name || "",
+    start_date: card?.start_date || null,
+    end_date: card?.end_date || null,
+    employee_id: card?.employee_id || null ,
+    status: card?.status || "در حال انجام",
+    project_id: card?.project_id
+  });
+
+  const createNewTask = async (formData) => {
+    const { id: projectId } = useParams(); // Destructure id as projectId from URL params
+  
+    // Convert and assign project_id to formData
+    const updatedFormData = {
+      ...formData,
+      start_date: convertJalaliToGregorianISO(
+        convertPersianToEnglish(formData.start_date)
+      ),
+      end_date: convertJalaliToGregorianISO(
+        convertPersianToEnglish(formData.end_date)
+      ),
+      project_id: projectId,
+    };
+  
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/tasks/${projectId}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+        body: JSON.stringify(updatedFormData), // Use the updated formData
+      });
+  
+      if (res.status === 200) {
+        const resJson = await res.json();
+        console.log("Registration successful", resJson);
+        alert("Task created successfully");
+      } else {
+        const resJson = await res.json();
+        alert(resJson.detail);
+      }
+    } catch (e) {
+      console.log("Error:", e);
+      alert("An error occurred. Please try again.");
+    }
+  };
+
   const [isAccordionView, setIsAccordionView] = useState(false);
   const [expanded, setExpanded] = useState(null);
   const [columns, setColumns] = useState({
@@ -14,7 +63,6 @@ const Board = () => {
     done: [],
   });
   const [currentCard, setCurrentCard] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAddCardModalVisible, setIsAddCardModalVisible] = useState(false);
   const [newCardInfo, setNewCardInfo] = useState({
     name: "",
@@ -26,8 +74,7 @@ const Board = () => {
   });
   const [isEditMode, setIsEditMode] = useState(false);
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState([]);
+  const [showEmployeeList, setShowEmployeeList] = useState(false);
 
   // شناسایی حالت ریسپانسیو (آکاردئون یا سه ستونی)
   useEffect(() => {
@@ -63,7 +110,9 @@ const Board = () => {
       setColumns((prev) => {
         const updatedColumns = {
           ...prev,
-          [currentCard.status]: prev[currentCard.status].filter((card) => card.id !== currentCard.id),
+          [currentCard.status]: prev[currentCard.status].filter(
+            (card) => card.id !== currentCard.id
+          ),
         };
         updatedColumns[targetColumnId] = [
           ...updatedColumns[targetColumnId],
@@ -73,7 +122,7 @@ const Board = () => {
       });
     } else {
       const newCard = {
-        id: Date.now(),
+        id: Date.now(), // نیاز به تغییر به شناسه یکتا داریم
         ...newCardInfo,
       };
       setColumns((prev) => ({
@@ -82,6 +131,7 @@ const Board = () => {
       }));
     }
     setIsAddCardModalVisible(false);
+    createNewTask();
   };
 
   const editCard = (columnId, card) => {
@@ -99,8 +149,10 @@ const Board = () => {
     }));
   };
 
-  
-
+  const getCardTitles = () => {
+    return Object.keys(columns)
+      .flatMap((key) => columns[key].map((card) => card.name));
+  };
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
       {isAccordionView ? (
@@ -112,7 +164,11 @@ const Board = () => {
                 className="w-full text-right bg-gray-200 py-2 px-4 rounded shadow"
                 onClick={() => setExpanded(expanded === key ? null : key)}
               >
-                {key === "todo" ? "کارها" : key === "doing" ? "در حال انجام" : "انجام شده"}
+               {key === "todo"
+                  ? "کارها"
+                  : key === "doing"
+                  ? "در حال انجام"
+                  : "انجام شده"}
               </button>
               {expanded === key && (
                 <div className="mt-2">
@@ -128,7 +184,6 @@ const Board = () => {
                     onAddCard={key === "todo" ? addCard : null}
                     onEdit={(card) => editCard(key, card)}
                     onDelete={(cardId) => deleteCard(key, cardId)}
-                    
                     bgColor={
                       key === "todo"
                         ? "bg-gradient-to-tr from-pink-400 to-pink-600"
@@ -171,7 +226,7 @@ const Board = () => {
         </div>
       )}
 
-{isAddCardModalVisible && (
+      {isAddCardModalVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
             <h3 className="text-lg font-bold mb-4">
@@ -275,12 +330,13 @@ const Board = () => {
                 className="bg-blue-500 text-white text-sm py-2 px-4 rounded hover:bg-blue-600 transition"
                 onClick={saveCard}
               >
-                ذخیره
+               ذخیره 
               </button>
             </div>
           </div>
         </div>
       )}
+
       {/* دکمه نظردهی */}
       <button
         className="fixed bottom-4 left-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
