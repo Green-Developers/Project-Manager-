@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Column from "./Column";
-import Modals from "./Modals";
-import CommentsModal from "./CommentsModal";
-
+import Modal from "./Modal";
+import Card from "./Card";
+import DatePicker from "react-multi-date-picker";
+import persian from "react-date-object/calendars/persian";
+import persian_fa from "react-date-object/locales/persian_fa";
 
 // تابع Project به صورت جداگانه
 const Board = ({ projectId ,card}) => {
@@ -63,6 +65,7 @@ const Board = ({ projectId ,card}) => {
     done: [],
   });
   const [currentCard, setCurrentCard] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAddCardModalVisible, setIsAddCardModalVisible] = useState(false);
   const [newCardInfo, setNewCardInfo] = useState({
     name: "",
@@ -74,7 +77,8 @@ const Board = ({ projectId ,card}) => {
   });
   const [isEditMode, setIsEditMode] = useState(false);
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-  const [showEmployeeList, setShowEmployeeList] = useState(false);
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
 
   // شناسایی حالت ریسپانسیو (آکاردئون یا سه ستونی)
   useEffect(() => {
@@ -110,9 +114,7 @@ const Board = ({ projectId ,card}) => {
       setColumns((prev) => {
         const updatedColumns = {
           ...prev,
-          [currentCard.status]: prev[currentCard.status].filter(
-            (card) => card.id !== currentCard.id
-          ),
+          [currentCard.status]: prev[currentCard.status].filter((card) => card.id !== currentCard.id),
         };
         updatedColumns[targetColumnId] = [
           ...updatedColumns[targetColumnId],
@@ -149,10 +151,6 @@ const Board = ({ projectId ,card}) => {
     }));
   };
 
-  const getCardTitles = () => {
-    return Object.keys(columns)
-      .flatMap((key) => columns[key].map((card) => card.name));
-  };
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
       {isAccordionView ? (
@@ -164,11 +162,7 @@ const Board = ({ projectId ,card}) => {
                 className="w-full text-right bg-gray-200 py-2 px-4 rounded shadow"
                 onClick={() => setExpanded(expanded === key ? null : key)}
               >
-               {key === "todo"
-                  ? "کارها"
-                  : key === "doing"
-                  ? "در حال انجام"
-                  : "انجام شده"}
+                {key === "todo" ? "کارها" : key === "doing" ? "در حال انجام" : "انجام شده"}
               </button>
               {expanded === key && (
                 <div className="mt-2">
