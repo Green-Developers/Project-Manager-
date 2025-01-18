@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from Backend.database import get_db
 from Backend.models import Project, User
 from Backend.schemas import CreateProject, ProjectResponse 
@@ -39,7 +39,12 @@ async def view_projects(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_active_user)
 ):
-    return db.query(Project).filter(Project.owner_id == current_user.id).all()
+    return db.query(Project).filter(
+        or_(
+            Project.owner_id == current_user.id,
+            Project.employees.any(id=current_user.id) 
+        )
+    ).all()
 
 
 @router.get("/project/{project_id}", response_model=ProjectResponse)
