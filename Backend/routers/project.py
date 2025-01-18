@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from Backend.database import get_db
 from Backend.models import Project, User
-from Backend.schemas import CreateProject, ProjectResponse 
+from Backend.schemas import CreateProject, ProjectResponse, AddEmployeesRequest
 from Backend.auth.auth_handler import get_current_active_user
 
 router = APIRouter()
@@ -123,3 +123,39 @@ async def delete_project(
     db.delete(db_project)
     db.commit()
 
+
+@router.post("/add_employees/{project_id}", response_model=ProjectResponse)
+async def add_employees_to_project(
+    project_id: int, 
+    employees: AddEmployeesRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Project not found"
+        )
+
+    if project.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to add employees to this project"
+        )
+
+    employees_to_add = db.query(User).filter(User.id.in_(employees)).all()
+
+    if len(employees_to_add) != len(employees):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="One or more employees not found"
+        )
+
+    project.employees.extend(employees_to_add)
+
+    db.commit()
+    db.refresh(project)
+
+    return project
