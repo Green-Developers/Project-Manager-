@@ -69,7 +69,7 @@ class Task(Base):
     # ارتباط با پروژه
     employee_id = Column(Integer, ForeignKey("users.id"), nullable=False)  
     # ارتباط با کارمند
-    status = Column(Enum(TaskStatus), nullable=False, default=TaskStatus.TO_DO) 
+    status = Column(String, nullable=False) 
      # وضعیت تسک
 
     project = relationship("Project", back_populates="tasks")

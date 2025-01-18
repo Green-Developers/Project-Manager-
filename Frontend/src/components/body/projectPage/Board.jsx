@@ -6,11 +6,14 @@ import Card from "./Card";
 import DatePicker from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
+import {convertJalaliToGregorianISO , convertPersianToEnglish} from "../../../Utils/utils"
+
 
 // تابع Project به صورت جداگانه
 const Board = ({ projectId ,card}) => {
   const [formData, setFormData] = useState({
     name: card?.name || "",
+    description:card?.description ,
     start_date: card?.start_date || null,
     end_date: card?.end_date || null,
     employee_id: card?.employee_id || null ,
@@ -18,17 +21,26 @@ const Board = ({ projectId ,card}) => {
     project_id: card?.project_id
   });
 
+  const [newCardInfo, setNewCardInfo] = useState({
+    name: "",
+    description: "",
+    employee_id: "",
+    status: "todo",
+    start_date: null,
+    end_date: null,
+  });
+
   const createNewTask = async (formData) => {
-    const { id: projectId } = useParams(); // Destructure id as projectId from URL params
+    
   
     // Convert and assign project_id to formData
     const updatedFormData = {
-      ...formData,
+      ...newCardInfo,
       start_date: convertJalaliToGregorianISO(
-        convertPersianToEnglish(formData.start_date)
+        convertPersianToEnglish(newCardInfo.start_date)
       ),
       end_date: convertJalaliToGregorianISO(
-        convertPersianToEnglish(formData.end_date)
+        convertPersianToEnglish(newCardInfo.end_date)
       ),
       project_id: projectId,
     };
@@ -49,7 +61,7 @@ const Board = ({ projectId ,card}) => {
         alert("Task created successfully");
       } else {
         const resJson = await res.json();
-        alert(resJson.detail);
+        console.log(resJson);
       }
     } catch (e) {
       console.log("Error:", e);
@@ -67,14 +79,7 @@ const Board = ({ projectId ,card}) => {
   const [currentCard, setCurrentCard] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAddCardModalVisible, setIsAddCardModalVisible] = useState(false);
-  const [newCardInfo, setNewCardInfo] = useState({
-    name: "",
-    description: "",
-    employee: "",
-    status: "todo",
-    startDate: null,
-    endDate: null,
-  });
+
   const [isEditMode, setIsEditMode] = useState(false);
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
   const [comment, setComment] = useState("");
@@ -96,10 +101,10 @@ const Board = ({ projectId ,card}) => {
     setNewCardInfo({
       name: "",
       description: "",
-      employee: "",
+      employee_id: "",
       status: "todo",
-      startDate: null,
-      endDate: null,
+      start_date: null,
+      end_date: null,
     });
     setIsEditMode(false);
     setIsAddCardModalVisible(true);
@@ -250,11 +255,11 @@ const Board = ({ projectId ,card}) => {
             <input
               type="text"
               placeholder="نام کارمند"
-              value={newCardInfo.employee}
+              value={newCardInfo.employee_id}
               onChange={(e) =>
                 setNewCardInfo((prev) => ({
                   ...prev,
-                  employee: e.target.value,
+                  employee_id: e.target.value,
                 }))
               }
               className="w-full border border-gray-300 rounded-lg p-2 mb-4"
@@ -265,11 +270,11 @@ const Board = ({ projectId ,card}) => {
                   تاریخ شروع
                 </label>
                 <DatePicker
-                  value={newCardInfo.startDate}
+                  value={newCardInfo.start_date}
                   onChange={(date) =>
                     setNewCardInfo((prev) => ({
                       ...prev,
-                      startDate: date?.format("YYYY/MM/DD"),
+                      start_date: date?.format("YYYY/MM/DD"),
                     }))
                   }
                   calendar={persian}
@@ -284,11 +289,11 @@ const Board = ({ projectId ,card}) => {
                   تاریخ پایان
                 </label>
                 <DatePicker
-                  value={newCardInfo.endDate}
+                  value={newCardInfo.end_date}
                   onChange={(date) =>
                     setNewCardInfo((prev) => ({
                       ...prev,
-                      endDate: date?.format("YYYY/MM/DD"),
+                      end_date: date?.format("YYYY/MM/DD"),
                     }))
                   }
                   calendar={persian}

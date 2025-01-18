@@ -19,7 +19,8 @@ async def create_task(
     current_user: User = Depends(get_current_active_user)
 ):
     project = db.query(Project).filter(Project.id == project_id).first()
-    permision = Project.owner_id == current_user.id 
+    permision = project.owner_id == current_user.id 
+    print(task)
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
     elif not permision:
@@ -31,7 +32,7 @@ async def create_task(
             start_date=task.start_date,
             end_date=task.end_date,
             project_id=project_id,
-            employee_id=task.employee_id,
+            employee_id=int(task.employee_id),
             status=task.status 
         )
         db.add(new_task)

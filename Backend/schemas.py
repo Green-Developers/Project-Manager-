@@ -66,7 +66,7 @@ class TaskBase(BaseModel):
     start_date: datetime
     end_date: datetime
     employee_id: int
-    status: TaskStatus = TaskStatus.TO_DO  # مقدار پیش‌فرض
+    status: str
 
 
 class TaskCreate(TaskBase):
