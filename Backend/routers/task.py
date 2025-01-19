@@ -6,12 +6,13 @@ from Backend.database import get_db
 from Backend.models import Task, Project, User, TaskStatus
 from Backend.schemas import TaskCreate, TaskResponse, TaskBase
 from Backend.auth.auth_handler import get_current_active_user
-from Backend.datastructures import PriorityQueue
+from Backend.datastructures import TaskHashMap, PriorityQueue
 
 
 todo_queue = PriorityQueue()
 doing_queue = PriorityQueue()
 done_queue = PriorityQueue()
+task_map = TaskHashMap()
 
 router = APIRouter()
 
@@ -38,7 +39,7 @@ async def create_task(
             end_date=task.end_date,
             project_id=project_id,
             employee_id=task.employee_id,
-            status=TaskStatus.TO_DO  # مقدار پیش‌فرض
+            status=TaskStatus.TO_DO  
         )
         db.add(new_task)
         db.commit()
@@ -46,46 +47,41 @@ async def create_task(
 
         todo_queue.enqueue(new_task)
 
-        return new_task
+        task_map.put(new_task, 'To Do') 
 
+        return new_task
 
 
 @router.get("/{project_id}/tasks/todo", response_model=List[TaskResponse])
 async def get_todo_tasks(project_id: int, db: Session = Depends(get_db)):
-    """
-    دریافت تسک‌های TO_DO
-    """
     tasks = db.query(Task).filter(
         and_(Task.project_id == project_id, Task.status == TaskStatus.TO_DO)
     ).all()
     for task in tasks:
         todo_queue.enqueue(task)
+        task_map.put(task, 'To Do') 
     return [todo_queue.dequeue() for _ in range(len(todo_queue))]
 
 
 @router.get("/{project_id}/tasks/doing", response_model=List[TaskResponse])
 async def get_doing_tasks(project_id: int, db: Session = Depends(get_db)):
-    """
-    دریافت تسک‌های DOING
-    """
     tasks = db.query(Task).filter(
         and_(Task.project_id == project_id, Task.status == "doing")
     ).all()
     for task in tasks:
         doing_queue.enqueue(task)
+        task_map.put(task, 'Doing') 
     return [doing_queue.dequeue() for _ in range(len(doing_queue))]
 
 
 @router.get("/{project_id}/tasks/done", response_model=List[TaskResponse])
 async def get_done_tasks(project_id: int, db: Session = Depends(get_db)):
-    """
-    دریافت تسک‌های DONE
-    """
     tasks = db.query(Task).filter(
         and_(Task.project_id == project_id, Task.status == "done")
     ).all()
     for task in tasks:
         done_queue.enqueue(task)
+        task_map.put(task, 'Done')
     return [done_queue.dequeue() for _ in range(len(done_queue))]
 
 
@@ -110,7 +106,6 @@ async def update_task(
             detail="You are not allowed to update this task"
         )
 
-    # حذف از صف قبلی و افزودن به صف جدید در صورت تغییر وضعیت
     if db_task.status != task.status:
         if db_task.status == "to do":
             todo_queue.dequeue()
@@ -119,13 +114,15 @@ async def update_task(
         elif db_task.status == "done":
             done_queue.dequeue()
 
-        # افزودن به صف جدید
         if task.status == "to do":
             todo_queue.enqueue(db_task)
         elif task.status == "doing":
             doing_queue.enqueue(db_task)
         elif task.status == "done":
             done_queue.enqueue(db_task)
+
+        task_map.remove(db_task) 
+        task_map.put(db_task, task.status) 
 
     db_task.name = task.name
     db_task.description = task.description
