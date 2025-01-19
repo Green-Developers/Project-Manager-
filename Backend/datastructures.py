@@ -338,3 +338,30 @@ class MinHeap:
         while len(self.heap) > 0:
             sorted_list.append(self.extract_min())
         return sorted_list
+
+# --------------------------------------------------------------------------------------
+class TaskHashMap:
+    def __init__(self):
+        self.map = {}
+
+    def put(self, key, value):
+        self.map[key.id] = value
+
+    def get(self, key):
+        return self.map.get(key.id, None)
+
+    def remove(self, key):
+        if key.id in self.map:
+            del self.map[key.id]
+
+    def contains(self, key):
+        return key.id in self.map
+
+    def size(self):
+        return len(self.map)
+
+    def clear(self):
+        self.map.clear()
+
+    def all_items(self):
+        return self.map.items()
