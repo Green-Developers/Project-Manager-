@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from Backend.database import get_db
 from Backend.models import Project, User
-from Backend.schemas import CreateProject, ProjectResponse, AddEmployeesRequest
+from Backend.schemas import CreateProject, ProjectResponse, AddEmployeesRequest, UserResponse
 from Backend.auth.auth_handler import get_current_active_user
-
+from datastructures import MinHeap
 router = APIRouter()
 
 
@@ -159,3 +159,33 @@ async def add_employees_to_project(
     db.refresh(project)
 
     return project
+
+@router.get("/{project_id}/employees_sorted", response_model=list[UserResponse])
+async def get_sorted_employees(
+    project_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_active_user)
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Project not found"
+        )
+
+    if project.owner_id != current_user.id and not any(user.id == current_user.id for user in project.employees):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to view employees of this project"
+        )
+
+    employees = project.employees
+
+    heap = MinHeap()
+    for employee in employees:
+        heap.insert(employee)
+
+    sorted_employees = heap.sorted()
+
+    return sorted_employees
