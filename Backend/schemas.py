@@ -78,3 +78,18 @@ class TaskResponse(TaskBase):
 
 class AddEmployeesRequest(BaseModel):
     employees: list[int]
+
+
+
+from pydantic import BaseModel
+from typing import List
+
+class Addem(BaseModel):
+    id: int
+    title: str
+    description: str
+    start_date: datetime
+    end_date: datetime
+    owner_id: int
+    employees: List[int]  # فقط شناسه‌های کاربری
+

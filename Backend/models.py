@@ -12,8 +12,8 @@ Base = declarative_base()
 project_employees = Table(
     "project_employees",
     Base.metadata,
-    Column("project_id", Integer, ForeignKey("projects.id"), primary_key=True),
-    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True)
+    Column("project_id", Integer, ForeignKey("projects.id"), primary_key=True,unique=False),
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True,unique=False)
 )
 
 

@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from Backend.database import get_db
-from Backend.models import Project, User
-from Backend.schemas import CreateProject, ProjectResponse, AddEmployeesRequest, UserResponse
+from Backend.models import Project, User, project_employees
+from Backend.schemas import CreateProject, ProjectResponse, AddEmployeesRequest, UserResponse, Addem
 from Backend.auth.auth_handler import get_current_active_user
 from Backend.datastructures import MinHeap
 router = APIRouter()
@@ -124,10 +124,10 @@ async def delete_project(
     db.commit()
 
 
-@router.post("/add_employees/{project_id}", response_model=ProjectResponse)
-async def add_employees_to_project(
+@router.post("/add_employee/{project_id}", response_model=Addem)
+async def add_employee_to_project(
     project_id: int, 
-    employees: AddEmployeesRequest,
+    employee_id: int,  # شناسه کاربر
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -145,20 +145,28 @@ async def add_employees_to_project(
             detail="You are not allowed to add employees to this project"
         )
 
-    employees_to_add = db.query(User).filter(User.id.in_(employees)).all()
+    employee_to_add = db.query(User).filter(User.id == employee_id).first()
 
-    if len(employees_to_add) != len(employees):
+    if not employee_to_add:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
-            detail="One or more employees not found"
+            detail="Employee not found"
         )
 
-    project.employees.extend(employees_to_add)
+    # ایجاد یک رکورد جدید در جدول project_employees
+    project_employees_entry = project_employees.insert().values(
+        project_id=project.id,
+        user_id=employee_to_add.id
+    )
+    db.execute(project_employees_entry)
 
     db.commit()
+
+    # بازخوانی پروژه به روز شده
     db.refresh(project)
 
-    return project
+    return {"message": "Employee added to project successfully"}
+
 
 @router.get("/{project_id}/employees_sorted", response_model=list[UserResponse])
 async def get_sorted_employees(
