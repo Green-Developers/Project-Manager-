@@ -5,7 +5,7 @@ from Backend.database import get_db
 from Backend.models import Project, User
 from Backend.schemas import CreateProject, ProjectResponse, AddEmployeesRequest, UserResponse
 from Backend.auth.auth_handler import get_current_active_user
-from datastructures import MinHeap
+from Backend.datastructures import MinHeap
 router = APIRouter()
 
 
