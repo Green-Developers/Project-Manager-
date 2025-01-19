@@ -100,18 +100,15 @@ class LinkedList:
 # -------------------------------------------------------------------------------------
 class QueueNode:
     def __init__(self, value, priority):
-        self.value = value  # مقدار (مثلاً یک شیء تسک)
-        self.priority = priority  # اولویت (مثلاً end_date)
-        self.next = None  # اشاره‌گر به گره بعدی
+        self.value = value 
+        self.priority = priority
+        self.next = None 
 
 class PriorityQueue:
     def __init__(self):
-        self.front = None  # گره اول صف
+        self.front = None 
 
     def enqueue(self, task):
-        """
-        اضافه کردن تسک به صف بر اساس اولویت (end_date نزدیک‌تر بالاترین اولویت را دارد)
-        """
         priority = task.end_date
         new_node = QueueNode(task, priority)
 
@@ -126,9 +123,6 @@ class PriorityQueue:
             current.next = new_node
 
     def dequeue(self):
-        """
-        حذف و بازگشت به بالاترین اولویت
-        """
         if not self.front:
             raise IndexError("Dequeue from empty priority queue")
         task = self.front.value
@@ -136,23 +130,14 @@ class PriorityQueue:
         return task
 
     def peek(self):
-        """
-        مشاهده بالاترین اولویت بدون حذف
-        """
         if not self.front:
             raise IndexError("Peek from empty priority queue")
         return self.front.value
 
     def is_empty(self):
-        """
-        بررسی خالی بودن صف
-        """
         return self.front is None
 
     def __len__(self):
-        """
-        شمارش تعداد تسک‌ها در صف
-        """
         count = 0
         current = self.front
         while current:
@@ -161,9 +146,6 @@ class PriorityQueue:
         return count
 
     def __repr__(self):
-        """
-        نمایش صف به صورت رشته برای بررسی
-        """
         values = []
         current = self.front
         while current:

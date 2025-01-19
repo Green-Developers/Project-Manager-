@@ -10,7 +10,7 @@ from Backend.auth.auth_handler import (
     create_access_token,
     get_user,
     get_password_hash,
-    get_email  # Add this line to import get_email
+    get_email  
 )
 from Backend.database import get_db
 from Backend.schemas import Token, UserCreate, UserResponse

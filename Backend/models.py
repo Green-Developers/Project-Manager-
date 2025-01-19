@@ -9,7 +9,6 @@ from enum import Enum as PyEnum
 
 Base = declarative_base()
 
-# جدول واسط بین پروژه‌ها و کاربران
 project_employees = Table(
     "project_employees",
     Base.metadata,

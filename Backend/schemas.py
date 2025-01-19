@@ -51,8 +51,6 @@ class ProjectResponse(BaseModel):
     class Config:
         orm_mode = True
 
-# تعریف Enum برای وضعیت تسک
-
 
 class TaskStatus(str, Enum):
     TO_DO = "to do"
